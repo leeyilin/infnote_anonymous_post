@@ -17,3 +17,5 @@
 * I haven't tested whether the server could get the client address;
 
 * The basic architecture of this forum is based on P2P network. For simplicity, I started with the structure of Server/Client.
+
+* Add code to support SSL communication.
