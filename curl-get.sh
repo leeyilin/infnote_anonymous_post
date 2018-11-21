@@ -1,3 +1,4 @@
+# a curl client to test the websocket connection.
 curl -x socks5h://localhost:7000 -i -N \
 	--include --no-buffer \
 	--header "Connection: Upgrade" \
