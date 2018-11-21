@@ -1,0 +1,5 @@
+tornado
+stem
+websocket-client
+PySocks
+requests
