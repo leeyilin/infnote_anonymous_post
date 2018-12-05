@@ -3,3 +3,5 @@ stem
 websocket-client
 PySocks
 requests
+ecdsa
+base58

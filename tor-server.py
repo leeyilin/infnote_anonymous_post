@@ -5,7 +5,10 @@ import sys, threading, time
 from stem.control import Controller
 from stem import SocketError, UnsatisfiableRequest, CircStatus
 import stem.process
+import struct
 from stem.util import term
+from base58 import b58encode
+from key import Key
 
 
 WEB_PORT = 8080
@@ -71,13 +74,52 @@ class MyTorProcess(object):
             sys.exit()
 
 
+@tornado.web.stream_request_body
 class MainHandler(tornado.web.RequestHandler):
+    connections = {}
     # Normal http get for testing.
     def get(self):
         print('One client connected!')
         #return self.write('Ack!\n\n')
         return self.render('template/index.html', title='Discussion Forum', 
                 items=['to be,', 'or not to be,', 'that is a question.'])
+    
+    def post(self):
+        print('One client posted me')
+        return self.write('post accepted!')
+    
+    def data_received(self, chunk):
+        if str(self) in self.connections:
+            self.connections[str(self)] += chunk
+        else:
+            self.connections[str(self)] = chunk
+        self._handle_buffer()
+
+    # hard-decoding is not interesting and elegant...
+    def _handle_buffer(self):
+        buf = self.connections[str(self)]
+        receive_len = 0
+        if len(buf) >= 4:
+            public_key = 'w2vCKeZTQSaUqPsQ2BGL8tCuzfGjtbtkXPKwruwu9L9X'
+            key = Key(public_key=public_key)
+            signature_length, = struct.unpack_from('<i', buf, offset=receive_len)
+            receive_len += 4
+            if len(buf) >= receive_len + signature_length:
+                receive_len += signature_length
+                mysignature = buf[4:receive_len]
+                if len(buf) >= receive_len + 4:
+                    content_length, = struct.unpack_from('<i', buf, offset=receive_len)
+                    receive_len += 4
+                    if len(buf) >= receive_len + content_length:
+                        receive_len += content_length
+                        raw_mypost = buf[receive_len-content_length:receive_len]
+                        if key.verify(b58encode(mysignature), raw_mypost):
+                            print('verification pass!')
+                        else:
+                            print('verification failed...')
+                        print('post received:\n', raw_mypost.decode())
+                        self.connections[str(self)] = \
+                            self.connections[str(self)][receive_len:]
 
 
 class IPHandler(tornado.web.RequestHandler):
@@ -115,7 +157,7 @@ def start_web_app(listen_port):
             (r'/get_my_ip', IPHandler)
         ])
     app.listen(listen_port)
-    print('Push traffic periodically.')
+    print('Begin to Push traffic periodically as long as there is any client ...')
     tornado.ioloop.PeriodicCallback(push_traffic, 1000).start()
     tornado.ioloop.IOLoop.instance().start()
 
@@ -133,8 +175,4 @@ if __name__ == '__main__':
     threading.Thread(target=my_tor_process.create_hidden_service, 
             args=(WEB_PORT, 80, HIDDEN_SERVICE_DIR)).start()
     start_web_app(WEB_PORT)
-
-
-    
-
 

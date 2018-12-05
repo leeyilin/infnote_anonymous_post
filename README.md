@@ -4,11 +4,9 @@
 
 * Use stem, which is a python wrapper of Tor, to communicate annonymously.
 
+* The server could handle HTTP GET/POST request and websocket request.
 
-* The server currently could response with HTTP GET request and websocket request.
-
-
-* curl-get.sh: a curl client for testing.
+* mycurl.sh: a curl client for testing.
 
 * The additional packages are listed in requirements.txt
 
