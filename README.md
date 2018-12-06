@@ -6,6 +6,8 @@
 
 * The server could handle HTTP GET/POST request and websocket request.
 
+* Notice that the client could sign and POST binary data to the server and the server could verify it. 
+
 * mycurl.sh: a curl client for testing.
 
 * The additional packages are listed in requirements.txt
