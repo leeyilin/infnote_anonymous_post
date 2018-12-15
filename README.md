@@ -2,7 +2,7 @@
 
 ## Summary
 
-* Use stem, which is a python wrapper of Tor, to communicate annonymously.
+* Use stem, which is a python wrapper of Tor, to communicate anonymously.
 
 * The server could handle HTTP GET/POST request and websocket request.
 
